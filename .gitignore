@@ -125,3 +125,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
+# ignore Actual Input Output files used during testing
+packets.csv
+capture.pcapng

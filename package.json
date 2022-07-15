@@ -1,0 +1,16 @@
+{
+  "name": "protocol-tools",
+  "version": "1.0.0",
+  "description": "Analyse network protocols captured in pcapng file",
+  "main": "ptool.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jack Woodgate",
+  "license": "ISC",
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "fs": "^0.0.1-security",
+    "pcap-ng-parser": "^1.0.0"
+  }
+}
