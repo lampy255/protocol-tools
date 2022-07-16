@@ -14,4 +14,4 @@ Packets can also be filtered by source/dest IP address.
 ## Usage
 - Clone Repo
 - "npm i"
-- Command example: "node ptool.js capture.pcapng"
+- Command example: "node ptool.js capture.pcapng -f 192.168.1.1"
