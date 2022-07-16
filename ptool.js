@@ -1,5 +1,4 @@
 //Imports
-const { parse } = require('path');
 const PCAPNGParser = require('pcap-ng-parser');
 const pcapNgParser = new PCAPNGParser();
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
@@ -50,16 +49,22 @@ function processFile(file) {
             if (parsedPacket.data[23] == '17') { //If Protocol is UDP
                 let srcIP = (parsedPacket.data[26] + "." + parsedPacket.data[27] + "." + parsedPacket.data[28] + "." + parsedPacket.data[29]);
                 let dstIP = (parsedPacket.data[30] + "." + parsedPacket.data[31] + "." + parsedPacket.data[32] + "." + parsedPacket.data[33]);
-                let timestamp = (parsedPacket.timestampHigh.toString() + parsedPacket.timestampLow.toString());
+                let time = (parsedPacket.timestampHigh * 0x100000000 + parsedPacket.timestampLow);
+                let timeobj = new Date(time / 1000);
+                let timestamp = timeobj.toLocaleTimeString() + ":" + timeobj.getMilliseconds();
+                let length = (parsedPacket.data.readUInt16BE(38));
+                let endIndex = ((length - 8) + 42);
+                //console.log(length)
                 if (filterIP !== null) {
                     if (srcIP === filterIP || dstIP === filterIP) {
                         let packet = {
                             timestamp,
                             srcIP,
                             dstIP,
-                            ascii: (parsedPacket.data.slice(42).toString('ascii')),
-                            hex: parsedPacket.data.slice(42).toString('hex'),
-                            base64: parsedPacket.data.slice(42).toString('base64')
+                            ascii: safeAscii((parsedPacket.data.slice(42, endIndex).toString('ascii'))),
+                            hex: parsedPacket.data.slice(42, endIndex).toString('hex'),
+                            base64: parsedPacket.data.slice(42, endIndex).toString('base64'),
+                            decimal: decimalArray(parsedPacket.data.slice(42, endIndex))
                         }
                         packetArray.push(packet);
                     }
@@ -68,9 +73,10 @@ function processFile(file) {
                         timestamp,
                         srcIP,
                         dstIP,
-                        ascii: (parsedPacket.data.slice(42).toString('ascii')),
-                        hex: parsedPacket.data.slice(42).toString('hex'),
-                        base64: parsedPacket.data.slice(42).toString('base64')
+                        ascii: safeAscii((parsedPacket.data.slice(42, endIndex).toString('ascii'))),
+                        hex: parsedPacket.data.slice(42, endIndex).toString('hex'),
+                        base64: parsedPacket.data.slice(42, endIndex).toString('base64'),
+                        decimal: decimalArray(parsedPacket.data.slice(42, endIndex))
                     }
                     packetArray.push(packet);
                 }
@@ -81,6 +87,21 @@ function processFile(file) {
         })
 }
 
+function decimalArray(data) {
+    let array = [];
+    for (let pair of data.entries()) {
+        array.push(pair[1])
+    }
+      return array.join(" ")
+}
+
+function safeAscii(data) {
+    let string = data;
+    //string = string.replace(',', '');
+    string = string.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+    return string
+}
+
 function writeCSV(array) {
     const csvWriter = createCsvWriter({
         path: 'packets.csv',
@@ -88,8 +109,9 @@ function writeCSV(array) {
           {id: 'timestamp', title: 'Timestamp'},
           {id: 'srcIP', title: 'Src'},
           {id: 'dstIP', title: 'Dst'},
-          {id: 'ascii', title: 'ASCII'},
           {id: 'hex', title: 'Hex'},
+          {id: 'ascii', title: 'ASCII'},
+          {id: 'decimal', title: 'Decimal'},
           {id: 'base64', title: 'Base64'}
         ]
       });
