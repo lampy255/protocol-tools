@@ -6,7 +6,7 @@ When reverse engineering network protocols this tool might come in handy.
 
 Protocol Tools takes a packet capture in the form of .pcapng and outputs a .csv file.
 
-The csv file is a filtered output of the packet capture, with the payload of each packet displayed as ascii, hex, decimal in each column of the csv.
+The csv file is a filtered output of the packet capture, with the payload of each packet displayed as ascii, hex, and base64 in each column of the csv.
 
 Packets can also be filtered by source/dest IP address.
 
